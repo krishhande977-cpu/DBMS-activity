@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, Database } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Badge from './Badge';
 
 const Navbar = ({ onOpenSidebar, pageTitle = 'Dashboard' }) => {
   const { user } = useAuth();
+  const [isLive, setIsLive] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => {
+      setIsLive(e.detail?.online || false);
+    };
+    window.addEventListener('backend-status', handler);
+    return () => window.removeEventListener('backend-status', handler);
+  }, []);
 
   return (
     <header className="h-16 bg-white border-b border-slate-200/80 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
@@ -24,11 +33,21 @@ const Navbar = ({ onOpenSidebar, pageTitle = 'Dashboard' }) => {
       </div>
 
       <div className="flex items-center space-x-3">
-        {/* Database Status Pill */}
-        <div className="hidden md:flex items-center space-x-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-semibold">
-          <Database className="w-3.5 h-3.5 text-emerald-600" />
-          <span>MySQL Live</span>
-        </div>
+        {/* Dynamic Database Status Pill */}
+        {isLive ? (
+          <div className="hidden md:flex items-center space-x-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-semibold">
+            <Database className="w-3.5 h-3.5 text-emerald-600" />
+            <span>MySQL Live</span>
+          </div>
+        ) : (
+          <div
+            title="Running with realistic hospital demo database"
+            className="hidden md:flex items-center space-x-1.5 px-3 py-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-full text-xs font-semibold"
+          >
+            <Database className="w-3.5 h-3.5 text-sky-600" />
+            <span>Demo Database Active</span>
+          </div>
+        )}
 
         {/* User Pill (No Login Required) */}
         <div className="flex items-center space-x-3 pl-2 border-l border-slate-200">
