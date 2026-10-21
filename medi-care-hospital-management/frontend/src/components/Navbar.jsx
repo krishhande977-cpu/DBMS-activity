@@ -1,10 +1,10 @@
 import React from 'react';
-import { Menu, Bell, Database, LogOut } from 'lucide-react';
+import { Menu, Database } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Badge from './Badge';
 
 const Navbar = ({ onOpenSidebar, pageTitle = 'Dashboard' }) => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     <header className="h-16 bg-white border-b border-slate-200/80 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
@@ -30,20 +30,22 @@ const Navbar = ({ onOpenSidebar, pageTitle = 'Dashboard' }) => {
           <span>MySQL Live</span>
         </div>
 
-        {/* User Pill & Logout */}
+        {/* User Pill (No Login Required) */}
         <div className="flex items-center space-x-3 pl-2 border-l border-slate-200">
           <div className="hidden sm:block text-right">
-            <p className="text-xs font-bold text-slate-800 leading-tight">{user?.name}</p>
-            <span className="text-[10px] text-slate-400 font-medium">{user?.email}</span>
+            <p className="text-xs font-bold text-slate-800 leading-tight">{user?.name || 'Administrator'}</p>
+            <span className="text-[10px] text-emerald-600 font-semibold flex items-center justify-end gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Full Access
+            </span>
           </div>
 
-          <button
-            onClick={logout}
-            title="Sign Out"
-            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+          <div
+            title="Administrator - Full Access Mode"
+            className="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-600 to-teal-500 flex items-center justify-center text-white font-bold text-xs shadow-sm"
           >
-            <LogOut className="w-4 h-4" />
-          </button>
+            AD
+          </div>
         </div>
       </div>
     </header>

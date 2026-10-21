@@ -14,15 +14,15 @@ import {
   CreditCard,
   Briefcase,
   BarChart3,
-  LogOut,
+  ShieldCheck,
   Cross
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Badge from './Badge';
 
 const Sidebar = ({ isOpen, onClose }) => {
-  const { user, logout } = useAuth();
-  const role = user?.role || 'RECEPTIONIST';
+  const { user } = useAuth();
+  const role = user?.role || 'ADMIN';
 
   const menuItems = [
     {
@@ -105,7 +105,8 @@ const Sidebar = ({ isOpen, onClose }) => {
     },
   ];
 
-  const allowedMenuItems = menuItems.filter((item) => item.roles.includes(role));
+  // All menu items are accessible with authentication bypassed
+  const allowedMenuItems = menuItems;
 
   return (
     <>
@@ -142,10 +143,10 @@ const Sidebar = ({ isOpen, onClose }) => {
         <div className="px-4 py-3 border-b border-slate-800/80 bg-slate-800/30">
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-lg bg-sky-950 border border-sky-800 flex items-center justify-center text-sky-300 font-bold text-sm">
-              {user?.name?.charAt(0) || 'U'}
+              {user?.name?.charAt(0) || 'A'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white truncate">{user?.name || 'User'}</p>
+              <p className="text-xs font-semibold text-white truncate">{user?.name || 'Administrator'}</p>
               <div className="mt-0.5">
                 <Badge status={role} />
               </div>
@@ -177,15 +178,12 @@ const Sidebar = ({ isOpen, onClose }) => {
           })}
         </nav>
 
-        {/* Logout Bottom Footer */}
+        {/* Full Access Mode Footer */}
         <div className="p-3 border-t border-slate-800">
-          <button
-            onClick={logout}
-            className="w-full flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 border border-rose-900/40 transition-colors"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </button>
+          <div className="flex items-center justify-center px-3 py-2 rounded-xl text-xs font-semibold text-emerald-400 bg-emerald-950/40 border border-emerald-900/40">
+            <ShieldCheck className="w-4 h-4 mr-2 text-emerald-400 flex-shrink-0" />
+            <span className="truncate">Full Access (No Login)</span>
+          </div>
         </div>
       </aside>
     </>

@@ -1,0 +1,10 @@
+{
+  "name": "medicare-hospital-management-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix medi-care-hospital-management/frontend run dev",
+    "build": "npm --prefix medi-care-hospital-management/frontend run build",
+    "preview": "npm --prefix medi-care-hospital-management/frontend run preview"
+  }
+}

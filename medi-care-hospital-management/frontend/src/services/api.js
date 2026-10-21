@@ -21,17 +21,10 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle session expiration
+// Response interceptor to handle errors without forced redirects
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      if (window.location.pathname !== '/login') {
-        localStorage.removeItem('medicare_token');
-        localStorage.removeItem('medicare_user');
-        window.location.href = '/login?expired=1';
-      }
-    }
     return Promise.reject(error);
   }
 );

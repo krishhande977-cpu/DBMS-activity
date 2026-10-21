@@ -10,11 +10,33 @@ DATABASE_URL = os.getenv(
     "mysql+pymysql://root:@localhost:3306/medicare_hospital"
 )
 
-# Enable pool recycle to keep MySQL connections healthy
+# Standardize database protocol for SQLAlchemy PyMySQL dialect
+if DATABASE_URL.startswith("mysql://"):
+    DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+pymysql://", 1)
+
+connect_args = {}
+
+# Enable SSL for cloud MySQL providers (TiDB Cloud, Aiven, Railway, etc.)
+use_ssl = (
+    "tidbcloud" in DATABASE_URL
+    or "aivencloud" in DATABASE_URL
+    or "ssl=true" in DATABASE_URL.lower()
+    or os.getenv("DB_SSL", "").lower() in ("true", "1", "yes")
+)
+
+if use_ssl:
+    import ssl
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    connect_args["ssl"] = ctx
+
+# Enable pre-ping and pool recycle to prevent dropped idle connections on cloud hosts
 engine = create_engine(
     DATABASE_URL,
+    connect_args=connect_args,
     pool_pre_ping=True,
-    pool_recycle=3600,
+    pool_recycle=300,
     echo=False
 )
 

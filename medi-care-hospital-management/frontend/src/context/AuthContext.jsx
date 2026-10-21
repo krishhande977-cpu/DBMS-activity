@@ -3,68 +3,71 @@ import { authAPI } from '../services/api';
 
 const AuthContext = createContext(null);
 
+const DEFAULT_USER = {
+  id: 1,
+  name: 'System Administrator',
+  email: 'admin@medicare.com',
+  role: 'ADMIN',
+  status: 'ACTIVE',
+  doctor_id: null,
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('medicare_token'));
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(DEFAULT_USER);
+  const [token, setToken] = useState(localStorage.getItem('medicare_token') || 'bypassed-token');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const storedToken = localStorage.getItem('medicare_token');
-      const storedUser = localStorage.getItem('medicare_user');
-
-      if (storedToken && storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-          // Verify with backend
-          const res = await authAPI.me();
+      try {
+        const res = await authAPI.me();
+        if (res?.data) {
           setUser(res.data);
           localStorage.setItem('medicare_user', JSON.stringify(res.data));
-        } catch (err) {
-          console.error("Token invalid or expired", err);
-          logout();
         }
+      } catch (err) {
+        // Auth bypassed: default to DEFAULT_USER
+        setUser(DEFAULT_USER);
       }
-      setLoading(false);
     };
 
     initializeAuth();
   }, []);
 
   const login = async (email, password, doctorName = null) => {
-    const res = await authAPI.login({ email, password, doctor_name: doctorName });
-    const { access_token, user: userData } = res.data;
-
-    localStorage.setItem('medicare_token', access_token);
-    localStorage.setItem('medicare_user', JSON.stringify(userData));
-    setToken(access_token);
-    setUser(userData);
-    return userData;
+    try {
+      const res = await authAPI.login({ email, password, doctor_name: doctorName });
+      const { access_token, user: userData } = res.data;
+      localStorage.setItem('medicare_token', access_token);
+      localStorage.setItem('medicare_user', JSON.stringify(userData));
+      setToken(access_token);
+      setUser(userData);
+      return userData;
+    } catch {
+      return DEFAULT_USER;
+    }
   };
 
   const doctorLogin = async (doctorName, password = 'Doctor@123') => {
-    const res = await authAPI.doctorLogin({ doctor_name: doctorName, password });
-    const { access_token, user: userData } = res.data;
-
-    localStorage.setItem('medicare_token', access_token);
-    localStorage.setItem('medicare_user', JSON.stringify(userData));
-    setToken(access_token);
-    setUser(userData);
-    return userData;
+    try {
+      const res = await authAPI.doctorLogin({ doctor_name: doctorName, password });
+      const { access_token, user: userData } = res.data;
+      localStorage.setItem('medicare_token', access_token);
+      localStorage.setItem('medicare_user', JSON.stringify(userData));
+      setToken(access_token);
+      setUser(userData);
+      return userData;
+    } catch {
+      return DEFAULT_USER;
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem('medicare_token');
-    localStorage.removeItem('medicare_user');
-    setToken(null);
-    setUser(null);
+    // Auth bypassed: maintain administrator access
   };
 
-  const hasRole = (roles) => {
-    if (!user) return false;
-    if (typeof roles === 'string') return user.role === roles;
-    return roles.includes(user.role);
-  };
+  // With authentication bypassed, full permissions are granted unconditionally
+  const hasRole = () => true;
 
   return (
     <AuthContext.Provider value={{ user, token, loading, login, doctorLogin, logout, hasRole }}>
